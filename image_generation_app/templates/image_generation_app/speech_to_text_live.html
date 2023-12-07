@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech to Text Live</title>
+</head>
+<body>
+
+<h2>Speech to Text Live</h2>
+
+<form method="post" id="speechToTextForm">
+    <input type="hidden" name="csrfmiddlewaretoken" value="s5kLwYtVoZjNq0TKQAxZKZyzShScfYX1d7HrySa2qoRPVViFDAX4psc39iXy7tjH">
+    <button type="button" id="startRecording">Start Recording</button>
+    <button type="button" id="stopRecording">Stop Recording</button>
+</form>
+
+<div id="transcriptionResult"></div>
+
+<script>
+    const startButton = document.getElementById('startRecording');
+    const stopButton = document.getElementById('stopRecording');
+    const resultDiv = document.getElementById('transcriptionResult');
+    const form = document.getElementById('speechToTextForm');
+
+    let mediaRecorder;
+    let audioChunks = [];
+
+    startButton.addEventListener('click', () => {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = event => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+
+                    const timestamp = new Date().toISOString().replace(/[-T:.Z]/g, "");
+                    const audioFilename = `audio_${timestamp}.wav`;
+
+                    const formData = new FormData(form);
+                    formData.append('audio_data', audioBlob);
+                    formData.append('audio_filename', audioFilename);
+
+                    // Log the length of audioChunks for debugging
+                    console.log('Audio chunks length:', audioChunks.length);
+                    console.log('Audio Blob size:', audioBlob.size);
+
+                    fetch('{% url "image_generation_app:speech_to_text" %}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                        },
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.error_message) {
+                            console.error('Error:', data.error_message);
+                        } else {
+                            resultDiv.textContent = `Transcription Result: ${data.text_result}`;
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+
+                    audioChunks = [];
+                };
+
+                mediaRecorder.start();
+            })
+            .catch(error => console.error('Error accessing microphone:', error));
+    });
+    
+
+    stopButton.addEventListener('click', () => {
+        mediaRecorder.stop();
+    });
+
+    // Function to get CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% load static %}
+    <title>Speech to Text</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+</head>
+<style>
+    /* Styling for the body to set the background image */
+    body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-image: url("{% static 'images/speak1.png' %}"); /* Path to your image */
+        background-size: contain; /* Adjust the image size to fit within the background */
+        background-position: center bottom; /* Position the background image */
+        background-repeat: no-repeat; /* Prevent image repetition */
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+</style>
+<body>
+    <form action="{% url 'image_generation_app:speech_to_text' %}" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Please Speak...</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!-- image_generation_app/templates/image_generation_app/generate_image.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Image</title>
+</head>
+<body>
+
+<h2>Generate Image</h2>
+
+<form method="post" action="{% url 'image_generation_app:generate_image' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Generate Image</button>
+</form>
+
+</body>
+</html>

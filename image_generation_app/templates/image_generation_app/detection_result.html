@@ -1,0 +1,41 @@
+<!-- object_detection_app/detection_result.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detection Result</title>
+</head>
+<body>
+    <h1>Detection Result</h1>
+
+    {% if image_path %}
+        <img src="/home/sakhaglobal/GPU/image_generaton_project/media/{{ image_path }}" alt="Uploaded Image" style="max-width: 100%; height: auto;">
+    {% endif %}
+
+    <h2>Detected Objects:</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Label</th>
+                <th>Bounding Box</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in detection_result %}
+                <tr>
+                    <td>{{ obj.label }}</td>
+                    <td>
+                        x_min: {{ obj.box.x_min }}<br>
+                        y_min: {{ obj.box.y_min }}<br>
+                        x_max: {{ obj.box.x_max }}<br>
+                        y_max: {{ obj.box.y_max }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
